@@ -9,12 +9,11 @@ router.get('/:show_id', async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT similar_shows($1, $2) AS recommendations`,
+      `SELECT * FROM similar_shows($1, $2)`,
       [show_id, limit]
     );
 
-    const recommendations = result.rows[0]?.recommendations || [];
-    res.json(recommendations);
+    res.json(result.rows);
   } catch (err) {
     console.error('Recommendations error:', err.message);
     res.status(500).json({ error: 'Internal server error' });

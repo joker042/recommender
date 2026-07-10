@@ -35,8 +35,8 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT s.id, s.title, s.type, s.year, s.description,
-              COALESCE(ss.total_score, 0) AS score,
+      `SELECT s.id, s.title, s.type, s.year, s.synopsis,
+              COALESCE(ss.score, 0) AS score,
               COALESCE(ss.total_votes, 0) AS votes
        FROM shows s
        LEFT JOIN show_scores ss ON s.id = ss.show_id
@@ -51,9 +51,11 @@ router.get('/:id', async (req, res) => {
     const show = result.rows[0];
 
     const tagsResult = await pool.query(
-      `SELECT t.id, t.name, t.category, COALESCE(st.score, 0) AS score, COALESCE(st.total_votes, 0) AS votes
-       FROM tags t
-       LEFT JOIN show_tag_scores st ON t.id = st.tag_id AND st.show_id = $1
+      `SELECT t.id, t.name, t.category, COALESCE(uts.score, 0) AS score, COALESCE(uts.total_votes, 0) AS votes, st.weight
+       FROM show_tags st
+       JOIN tags t ON t.id = st.tag_id
+       LEFT JOIN show_tag_scores uts ON uts.tag_id = st.tag_id AND uts.show_id = st.show_id
+       WHERE st.show_id = $1
        ORDER BY t.name`,
       [req.params.id]
     );
