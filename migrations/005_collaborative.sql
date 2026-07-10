@@ -1,5 +1,4 @@
--- Collaborative filtering recommendations, excluding interacted shows
-DROP FUNCTION IF EXISTS user_recommendations(INTEGER,INTEGER);
+DROP FUNCTION IF EXISTS user_recommendations(INTEGER,INTEGER,INTEGER);
 
 CREATE OR REPLACE FUNCTION user_recommendations(
   target_user_id INTEGER,
@@ -42,10 +41,10 @@ RETURNS TABLE(show_id INTEGER, title TEXT, type TEXT, year INTEGER, synopsis TEX
     HAVING SUM(n.similarity * usv.vote) > 0
   )
   SELECT s.id, s.title, s.type, s.year, s.synopsis,
-         r.score, 'similar-users-upvoted' AS reason
+         r.score, 'collaborative' AS reason
   FROM neighbor_recs r
   JOIN shows s ON s.id = r.show_id
-  ORDER BY r.score DESC
+  ORDER BY r.score DESC, RANDOM()
   OFFSET page_offset
   LIMIT limit_n;
-$$ LANGUAGE SQL STABLE;
+$$ LANGUAGE SQL VOLATILE;

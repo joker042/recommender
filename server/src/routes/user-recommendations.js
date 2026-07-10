@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
                 COALESCE(ss.score, 0)::REAL AS score, 'trending' AS reason
          FROM shows s
          LEFT JOIN show_scores ss ON ss.show_id = s.id
-         ORDER BY ss.score DESC NULLS LAST, s.title
+         ORDER BY ss.score DESC NULLS LAST, RANDOM()
          OFFSET $1 LIMIT $2`,
         [offset, limit]
       );
@@ -67,7 +67,7 @@ router.get('/', async (req, res) => {
               COALESCE(ss.score, 0)::REAL AS score, 'trending' AS reason
        FROM shows s
        LEFT JOIN show_scores ss ON ss.show_id = s.id
-       ORDER BY ss.score DESC NULLS LAST, s.title
+       ORDER BY ss.score DESC NULLS LAST, RANDOM()
        OFFSET $1 LIMIT $2`,
       [offset, limit]
     );

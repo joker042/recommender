@@ -1,7 +1,3 @@
--- Fix the similar_shows function to use correct cosine distance
--- Old: only counted seed tags that overlap, giving 1.0 for any overlap
--- New: proper cosine with full vector magnitudes
-
 CREATE OR REPLACE FUNCTION similar_shows(seed_id INTEGER, limit_n INTEGER DEFAULT 10)
 RETURNS TABLE(show_id INTEGER, title TEXT, similarity REAL) AS $$
   WITH seed_tags AS (
@@ -22,6 +18,6 @@ RETURNS TABLE(show_id INTEGER, title TEXT, similarity REAL) AS $$
   )
   SELECT id, title, similarity
   FROM scores
-  ORDER BY similarity DESC
+  ORDER BY similarity DESC, RANDOM()
   LIMIT limit_n;
-$$ LANGUAGE SQL STABLE;
+$$ LANGUAGE SQL VOLATILE;
