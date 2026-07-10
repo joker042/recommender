@@ -197,3 +197,12 @@ input[type="text"]:focus {
   padding: 2rem;
   color: #666;
 }
+
+.vote-btn.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+.vote-btn.active:hover {
+  background: #1d4ed8;
+}
