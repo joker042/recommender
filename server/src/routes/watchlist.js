@@ -9,12 +9,13 @@ router.get('/', async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT w.id, w.show_id, w.position, w.created_at,
+      `SELECT we.id, we.show_id, we.position, we.added_at,
               s.title, s.type, s.year
-       FROM watchlist w
-       JOIN shows s ON w.show_id = s.id
+       FROM watchlist_entries we
+       JOIN watchlists w ON w.id = we.watchlist_id
+       JOIN shows s ON s.id = we.show_id
        WHERE w.user_id = $1
-       ORDER BY w.position ASC`,
+       ORDER BY we.position ASC`,
       [userId]
     );
     res.json(result.rows);
@@ -32,16 +33,24 @@ router.post('/', async (req, res) => {
   if (!show_id) return res.status(400).json({ error: 'show_id required' });
 
   try {
-    const maxPos = await pool.query(
-      'SELECT COALESCE(MAX(position), 0) + 1 AS next_pos FROM watchlist WHERE user_id = $1',
+    const wl = await pool.query(
+      `INSERT INTO watchlists (user_id) VALUES ($1)
+       ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+       RETURNING id`,
       [userId]
+    );
+    const watchlistId = wl.rows[0].id;
+
+    const maxPos = await pool.query(
+      'SELECT COALESCE(MAX(position), 0) + 1 AS next_pos FROM watchlist_entries WHERE watchlist_id = $1',
+      [watchlistId]
     );
     const position = maxPos.rows[0].next_pos;
 
     const result = await pool.query(
-      `INSERT INTO watchlist (user_id, show_id, position)
+      `INSERT INTO watchlist_entries (watchlist_id, show_id, position)
        VALUES ($1, $2, $3) RETURNING *`,
-      [userId, show_id, position]
+      [watchlistId, show_id, position]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -59,8 +68,10 @@ router.put('/:entry_id', async (req, res) => {
 
   try {
     const result = await pool.query(
-      `UPDATE watchlist SET position = $1
-       WHERE id = $2 AND user_id = $3
+      `UPDATE watchlist_entries SET position = $1
+       WHERE id = $2 AND watchlist_id = (
+         SELECT id FROM watchlists WHERE user_id = $3
+       )
        RETURNING *`,
       [position, req.params.entry_id, userId]
     );
@@ -82,7 +93,10 @@ router.delete('/:entry_id', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'DELETE FROM watchlist WHERE id = $1 AND user_id = $2 RETURNING *',
+      `DELETE FROM watchlist_entries WHERE id = $1 AND watchlist_id = (
+        SELECT id FROM watchlists WHERE user_id = $2
+      )
+      RETURNING *`,
       [req.params.entry_id, userId]
     );
 
