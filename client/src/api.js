@@ -45,9 +45,11 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-export function searchShows(query) {
+export function searchShows(query, offset = 0, limit = 20) {
   const params = new URLSearchParams();
   if (query) params.set('q', query);
+  params.set('offset', offset);
+  params.set('limit', limit);
   return request(`/api/shows?${params}`);
 }
 

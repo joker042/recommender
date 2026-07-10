@@ -5,6 +5,8 @@ const router = Router();
 
 router.get('/', async (req, res) => {
   const { q } = req.query;
+  const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+  const offset = parseInt(req.query.offset, 10) || 0;
 
   try {
     if (q) {
@@ -13,8 +15,8 @@ router.get('/', async (req, res) => {
          FROM shows
          WHERE title ILIKE $1
          ORDER BY title
-         LIMIT 50`,
-        [`%${q}%`]
+         LIMIT $2 OFFSET $3`,
+        [`%${q}%`, limit, offset]
       );
       return res.json(result.rows);
     }
@@ -23,7 +25,8 @@ router.get('/', async (req, res) => {
       `SELECT id, title, type, year
        FROM shows
        ORDER BY title
-       LIMIT 50`
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
     res.json(result.rows);
   } catch (err) {

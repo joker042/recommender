@@ -2,17 +2,18 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { voteShow, addToWatchlist } from './api.js';
 
-export default function ShowCard({ show }) {
+export default function ShowCard({ show, onVoteChange }) {
   const [added, setAdded] = useState(false);
   const [myVote, setMyVote] = useState(0); // -1, 0, +1
 
   async function handleVote(vote) {
-    const newVote = myVote === vote ? 0 : vote; // toggle off if same
+    const newVote = myVote === vote ? 0 : vote;
     setMyVote(newVote);
     try {
       await voteShow(show.id, newVote);
+      if (onVoteChange) onVoteChange(show.id, newVote);
     } catch (err) {
-      setMyVote(myVote); // revert on error
+      setMyVote(myVote);
       console.error(err);
     }
   }
