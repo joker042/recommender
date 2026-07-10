@@ -108,6 +108,8 @@ export function removeFromWatchlist(entryId) {
   return request(`/api/watchlist/${entryId}`, { method: 'DELETE' });
 }
 
-export function getUserRecommendations(limit = 20, offset = 0) {
-  return request(`/api/recommended?limit=${limit}&offset=${offset}`);
+export function getUserRecommendations(limit = 20, offset = 0, exclude = '') {
+  const params = new URLSearchParams({ limit, offset });
+  if (exclude) params.set('exclude', exclude);
+  return request(`/api/recommended?${params}`);
 }
