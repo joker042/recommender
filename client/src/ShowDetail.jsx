@@ -53,7 +53,7 @@ export default function ShowDetail() {
       <p>
         {show.type} &middot; {show.year}
       </p>
-      {show.description && <p>{show.description}</p>}
+      {show.synopsis && <p>{show.synopsis}</p>}
       <p>Score: {Number(show.score).toFixed(1)} ({show.votes} votes)</p>
       <button onClick={handleWatchlist} style={{ marginBottom: '1rem' }}>
         Add to Watchlist
@@ -87,7 +87,7 @@ export default function ShowDetail() {
         <div style={{ marginTop: '2rem' }}>
           <h2>Recommendations</h2>
           {recs.map((rec) => (
-            <ShowCard key={rec.id || rec.show_id} show={rec} />
+            <ShowCard key={rec.show_id} show={rec} />
           ))}
         </div>
       )}

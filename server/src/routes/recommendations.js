@@ -9,7 +9,9 @@ router.get('/:show_id', async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT * FROM similar_shows($1, $2)`,
+      `SELECT s.id, s.title, s.type, s.year, s.synopsis, sim.similarity
+       FROM similar_shows($1, $2) sim
+       JOIN shows s ON s.id = sim.show_id`,
       [show_id, limit]
     );
 

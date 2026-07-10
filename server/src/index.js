@@ -22,13 +22,8 @@ app.use(express.json());
 app.set('trust proxy', true);
 
 // Serve built client
-const clientDist = path.join(process.cwd(), 'client', 'dist');
+const clientDist = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDist));
-
-// SPA fallback
-app.get('/', (req, res) => {
-  res.sendFile(path.join(clientDist, 'index.html'));
-});
 
 app.use(userMiddleware);
 
@@ -39,6 +34,11 @@ app.use('/api/tags', tagsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/watchlist', watchlistRouter);
 app.use('/api/admin', adminRouter);
+
+// SPA fallback — must be after all API routes
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(clientDist, 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
