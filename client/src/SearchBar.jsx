@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { searchShows } from './api.js';
 import ShowCard from './ShowCard.jsx';
 
@@ -6,6 +6,21 @@ export default function SearchBar() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadInitial() {
+      try {
+        const data = await searchShows();
+        setResults(data.slice(0, 20));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setInitialLoading(false);
+      }
+    }
+    loadInitial();
+  }, []);
 
   async function handleSearch(e) {
     e.preventDefault();
@@ -20,21 +35,23 @@ export default function SearchBar() {
     }
   }
 
+  if (initialLoading) return <div className="loading">Loading shows...</div>;
+
   return (
     <div>
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+      <form onSubmit={handleSearch} className="search-form">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search shows..."
-          style={{ flex: 1, padding: '0.5rem' }}
         />
-        <button type="submit" disabled={loading} style={{ padding: '0.5rem 1rem' }}>
+        <button type="submit" disabled={loading}>
           {loading ? 'Searching...' : 'Search'}
         </button>
       </form>
       <div>
+        {results.length === 0 && <div className="empty-state"><p>No shows found.</p></div>}
         {results.map((show) => (
           <ShowCard key={show.id} show={show} />
         ))}

@@ -12,12 +12,12 @@ export default function App() {
     ensureAuth().then(() => setReady(true));
   }, []);
 
-  if (!ready) return <div>Loading...</div>;
+  if (!ready) return <div className="loading">Loading...</div>;
 
   return (
     <BrowserRouter>
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '1rem' }}>
-        <nav style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+      <div className="container">
+        <nav>
           <Link to="/">Home</Link>
           <Link to="/watchlist">Watchlist</Link>
         </nav>

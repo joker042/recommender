@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getWatchlist, removeFromWatchlist, updateWatchlistPosition } from './api.js';
 
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 export default function Watchlist() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,35 +74,37 @@ export default function Watchlist() {
     }
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div>
       <h1>Watchlist</h1>
-      <Link to="/">&larr; Back</Link>
-      {items.length === 0 && <p>No items in your watchlist.</p>}
+      <Link to="/" className="back-link">&larr; Back</Link>
+
+      {items.length === 0 && (
+        <div className="empty-state">
+          <p>Your watchlist is empty.</p>
+          <p>Search for shows and add them to your watchlist to start tracking what to watch next.</p>
+        </div>
+      )}
+
       {items.map((item, idx) => (
-        <div key={item.id} style={{
-          border: '1px solid #ccc',
-          borderRadius: 8,
-          padding: '0.75rem',
-          marginBottom: '0.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <div>
-            <Link to={`/show/${item.show_id}`} style={{ fontWeight: 'bold' }}>
-              {item.title}
-            </Link>
-            <div style={{ fontSize: '0.85rem', color: '#666' }}>
-              {item.type} {item.year && `(${item.year})`}
+        <div key={item.id} className="card">
+          <div className="card-header">
+            <div className="card-body">
+              <Link to={`/show/${item.show_id}`} style={{ fontWeight: 'bold' }}>
+                {item.title}
+              </Link>
+              <div className="meta">
+                {item.type} {item.year && `(${item.year})`}
+                {item.added_at && <span> &mdash; added {formatDate(item.added_at)}</span>}
+              </div>
             </div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.25rem' }}>
-            <button onClick={() => moveUp(idx)} disabled={idx === 0}>&uarr;</button>
-            <button onClick={() => moveDown(idx)} disabled={idx >= items.length - 1}>&darr;</button>
-            <button onClick={() => handleRemove(item.id)} style={{ color: 'red' }}>x</button>
+            <div className="card-actions">
+              <button className="vote-btn" onClick={() => moveUp(idx)} disabled={idx === 0} title="Move up">&uarr;</button>
+              <button className="vote-btn" onClick={() => moveDown(idx)} disabled={idx >= items.length - 1} title="Move down">&darr;</button>
+              <button className="danger" onClick={() => handleRemove(item.id)} title="Remove">x</button>
+            </div>
           </div>
         </div>
       ))}

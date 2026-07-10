@@ -22,31 +22,36 @@ export default function ShowCard({ show }) {
     }
   }
 
+  const synopsisSnippet = show.synopsis
+    ? show.synopsis.length > 80
+      ? show.synopsis.slice(0, 80) + '...'
+      : show.synopsis
+    : null;
+
   return (
-    <div style={{
-      border: '1px solid #ccc',
-      borderRadius: 8,
-      padding: '0.75rem',
-      marginBottom: '0.5rem',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    }}>
-      <div>
-        <Link to={`/show/${show.id}`} style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-          {show.title}
-        </Link>
-        <div style={{ fontSize: '0.85rem', color: '#666' }}>
-          {show.type} {show.year && `(${show.year})`}
-          {show.similarity != null && ` — similarity: ${Number(show.similarity).toFixed(2)}`}
+    <div className="card">
+      <div className="card-header">
+        <div className="card-body">
+          <Link to={`/show/${show.id}`} style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+            {show.title}
+          </Link>
+          <div className="meta">
+            {show.type} {show.year && `(${show.year})`}
+            {show.similarity != null && (
+              <span className="score-badge">
+                &mdash; {Number(show.similarity).toFixed(2)}
+              </span>
+            )}
+          </div>
+          {synopsisSnippet && <div className="synopsis-snippet">{synopsisSnippet}</div>}
         </div>
-      </div>
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <button onClick={() => handleVote(1)} title="Upvote">+</button>
-        <button onClick={() => handleVote(-1)} title="Downvote">-</button>
-        <button onClick={handleWatchlist} disabled={added}>
-          {added ? 'Added' : 'Watch'}
-        </button>
+        <div className="card-actions">
+          <button className="vote-btn" onClick={() => handleVote(1)} title="Upvote">+</button>
+          <button className="vote-btn" onClick={() => handleVote(-1)} title="Downvote">-</button>
+          <button onClick={handleWatchlist} disabled={added}>
+            {added ? 'Added' : '+Watch'}
+          </button>
+        </div>
       </div>
     </div>
   );
