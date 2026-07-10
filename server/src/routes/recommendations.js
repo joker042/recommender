@@ -3,6 +3,7 @@ import pool from '../db.js';
 
 const router = Router();
 
+// Content-based: recommendations FROM a seed show
 router.get('/:show_id', async (req, res) => {
   const { show_id } = req.params;
   const limit = parseInt(req.query.limit, 10) || 10;
@@ -14,7 +15,6 @@ router.get('/:show_id', async (req, res) => {
        JOIN shows s ON s.id = sim.show_id`,
       [show_id, limit]
     );
-
     res.json(result.rows);
   } catch (err) {
     console.error('Recommendations error:', err.message);

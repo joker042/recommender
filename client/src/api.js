@@ -107,3 +107,7 @@ export function updateWatchlistPosition(entryId, position) {
 export function removeFromWatchlist(entryId) {
   return request(`/api/watchlist/${entryId}`, { method: 'DELETE' });
 }
+
+export function getUserRecommendations(limit = 10) {
+  return request(`/api/recommended?limit=${limit}`);
+}

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import pool from './db.js';
 import showsRouter from './routes/shows.js';
 import recommendationsRouter from './routes/recommendations.js';
+import userRecsRouter from './routes/user-recommendations.js';
 import votesRouter from './routes/votes.js';
 import tagsRouter from './routes/tags.js';
 import authRouter from './routes/auth.js';
@@ -29,6 +30,7 @@ app.use(userMiddleware);
 
 app.use('/api/shows', showsRouter);
 app.use('/api/recommendations', recommendationsRouter);
+app.use('/api/recommended', userRecsRouter);
 app.use('/api/votes', votesRouter);
 app.use('/api/tags', tagsRouter);
 app.use('/api/auth', authRouter);
