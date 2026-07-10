@@ -9,6 +9,7 @@ import votesRouter from './routes/votes.js';
 import tagsRouter from './routes/tags.js';
 import authRouter from './routes/auth.js';
 import watchlistRouter from './routes/watchlist.js';
+import adminRouter from './routes/admin.js';
 import userMiddleware from './middleware/user.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,6 +38,7 @@ app.use('/api/votes', votesRouter);
 app.use('/api/tags', tagsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/watchlist', watchlistRouter);
+app.use('/api/admin', adminRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
