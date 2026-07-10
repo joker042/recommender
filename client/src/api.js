@@ -108,6 +108,6 @@ export function removeFromWatchlist(entryId) {
   return request(`/api/watchlist/${entryId}`, { method: 'DELETE' });
 }
 
-export function getUserRecommendations(limit = 10) {
-  return request(`/api/recommended?limit=${limit}`);
+export function getUserRecommendations(limit = 20, offset = 0) {
+  return request(`/api/recommended?limit=${limit}&offset=${offset}`);
 }

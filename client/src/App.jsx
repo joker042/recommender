@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import SearchBar from './SearchBar.jsx';
+import Home from './Home.jsx';
 import ShowDetail from './ShowDetail.jsx';
 import Watchlist from './Watchlist.jsx';
 import { ensureAuth } from './api.js';
@@ -22,7 +22,7 @@ export default function App() {
           <Link to="/watchlist">Watchlist</Link>
         </nav>
         <Routes>
-          <Route path="/" element={<SearchBar />} />
+          <Route path="/" element={<Home />} />
           <Route path="/show/:id" element={<ShowDetail />} />
           <Route path="/watchlist" element={<Watchlist />} />
         </Routes>
