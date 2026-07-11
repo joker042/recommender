@@ -1,10 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { voteShow, addToWatchlist } from './api.js';
+import { voteShow, addToWatchlist, getShow } from './api.js';
 
 export default function ShowCard({ show, onVoteChange }) {
   const [added, setAdded] = useState(false);
-  const [myVote, setMyVote] = useState(0); // -1, 0, +1
+  const [myVote, setMyVote] = useState(0);
+  const [topTags, setTopTags] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getShow(show.id).then(data => {
+      if (!cancelled && data.tags) {
+        setTopTags(data.tags.slice(0, 3));
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [show.id]); // -1, 0, +1
 
   async function handleVote(vote) {
     const newVote = myVote === vote ? 0 : vote;
@@ -49,6 +60,13 @@ export default function ShowCard({ show, onVoteChange }) {
             )}
           </div>
           {synopsisSnippet && <div className="synopsis-snippet">{synopsisSnippet}</div>}
+        {topTags.length > 0 && (
+          <div className="card-tags">
+            {topTags.map(t => (
+              <span key={t.id} className="mini-tag">{t.name}</span>
+            ))}
+          </div>
+        )}
         </div>
         <div className="card-actions">
           <button className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={() => handleVote(1)} title="Upvote">+</button>

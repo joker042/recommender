@@ -10,6 +10,7 @@ export default function ShowDetail() {
   const [loading, setLoading] = useState(true);
   const [myVote, setMyVote] = useState(0);
   const [watchlisted, setWatchlisted] = useState(false);
+  const [tagVotes, setTagVotes] = useState({});
 
   useEffect(() => {
     async function load() {
@@ -33,11 +34,11 @@ export default function ShowDetail() {
   if (!show) return <div className="empty-state"><p>Show not found.</p></div>;
 
   async function handleTagVote(tagId, vote) {
-    try {
-      await voteShowTag(show.id, tagId, vote);
-    } catch (err) {
-      console.error(err);
-    }
+    const prev = tagVotes[tagId] || 0;
+    const newVote = prev === vote ? 0 : vote;
+    setTagVotes({ ...tagVotes, [tagId]: newVote });
+    try { await voteShowTag(show.id, tagId, newVote); }
+    catch (err) { setTagVotes({ ...tagVotes, [tagId]: prev }); console.error(err); }
   }
 
   async function handleVote(vote) {
@@ -85,8 +86,8 @@ export default function ShowDetail() {
                 <span className="score-badge">
                   {Number(tag.score).toFixed(1)} ({tag.votes})
                 </span>
-                <button className="vote-btn" onClick={() => handleTagVote(tag.id, 1)}>+</button>
-                <button className="vote-btn" onClick={() => handleTagVote(tag.id, -1)}>-</button>
+                <button className={`vote-btn${(tagVotes[tag.id] || 0) === 1 ? ' active' : ''}`} onClick={() => handleTagVote(tag.id, 1)}>+</button>
+                <button className={`vote-btn${(tagVotes[tag.id] || 0) === -1 ? ' active' : ''}`} onClick={() => handleTagVote(tag.id, -1)}>-</button>
               </div>
             ))}
           </div>
