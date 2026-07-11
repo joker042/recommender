@@ -21,6 +21,8 @@ export default function ShowDetail() {
         ]);
         setShow(showData);
         setRecs(recsData);
+        // Pre-fill show vote from API
+        setMyVote(showData.my_vote || 0);
         // Pre-fill tag votes from user's previous votes
         if (showData.tags) {
           const votes = {};
