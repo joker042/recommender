@@ -1,51 +1,52 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getUserRecommendations } from './api.js';
 import ShowCard from './ShowCard.jsx';
+
+const PAGE_SIZE = 20;
 
 export default function Home() {
   const [shows, setShows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
+  const [done, setDone] = useState(false);
   const sentinelRef = useRef(null);
   const seenIds = useRef(new Set());
+  const loadingRef = useRef(false); // prevent double-fires
 
-  useEffect(() => { loadMore(); }, []);
-
-  const loadMore = useCallback(async () => {
-    if (!hasMore) return;
+  async function fetchBatch() {
+    if (loadingRef.current || done) return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       const exclude = [...seenIds.current].join(',');
-      const data = await getUserRecommendations(20, 0, exclude);
+      const data = await getUserRecommendations(PAGE_SIZE, 0, exclude);
       if (data.length === 0) {
-        setHasMore(false);
+        setDone(true);
       } else {
         data.forEach(s => seenIds.current.add(s.id));
         setShows(prev => [...prev, ...data]);
-        if (data.length < 20) setHasMore(false);
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
-  }, [hasMore]);
+  }
 
-  // Intersection Observer for infinite scroll
+  useEffect(() => { fetchBatch(); }, []);
+
+  // Infinite scroll via IntersectionObserver
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !loading && hasMore) {
-          loadMore();
-        }
-      },
-      { rootMargin: '200px' }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loading, hasMore, loadMore]);
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !loadingRef.current) {
+        fetchBatch();
+      }
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   return (
     <div>
@@ -55,12 +56,12 @@ export default function Home() {
       {shows.map(show => (
         <ShowCard key={show.id} show={show} />
       ))}
-      {hasMore && (
+      {!done && (
         <div ref={sentinelRef} style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {loading && <span>Loading more...</span>}
+          {loading && <span>Loading...</span>}
         </div>
       )}
-      {!hasMore && shows.length > 0 && (
+      {done && shows.length > 0 && (
         <p style={{ textAlign: 'center', color: '#888', marginTop: '1rem' }}>
           You've seen them all!
         </p>
