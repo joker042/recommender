@@ -41,19 +41,21 @@ export default function ShowDetail() {
   if (loading) return <div className="loading">Loading...</div>;
   if (!show) return <div className="empty-state"><p>Show not found.</p></div>;
 
-  async function handleTagVote(tagId, vote) {
+  async function handleTagVote(tagId, vote, e) {
+    if (e) e.preventDefault();
     const prev = tagVotes[tagId] || 0;
     const newVote = prev === vote ? 0 : vote;
     setTagVotes({ ...tagVotes, [tagId]: newVote });
     try { await voteShowTag(show.id, tagId, newVote); }
-    catch (err) { setTagVotes({ ...tagVotes, [tagId]: prev }); console.error(err); }
+    catch (err) { console.error('Tag vote failed:', err.message); }
   }
 
-  async function handleVote(vote) {
+  async function handleVote(vote, e) {
+    if (e) e.preventDefault();
     const newVote = myVote === vote ? 0 : vote;
     setMyVote(newVote);
     try { await voteShow(show.id, newVote); }
-    catch (err) { setMyVote(myVote); console.error(err); }
+    catch (err) { console.error('Vote failed:', err.message); }
   }
 
   async function handleWatchlist() {
@@ -81,8 +83,8 @@ export default function ShowDetail() {
         <span className="score-badge">({show.votes} votes)</span>
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-        <button className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={() => handleVote(1)}>+</button>
-        <button className={`vote-btn${myVote === -1 ? ' active' : ''}`} onClick={() => handleVote(-1)}>-</button>
+        <button type="button" className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={(e) => handleVote(1, e)}>+</button>
+        <button type="button" className={`vote-btn${myVote === -1 ? ' active' : ''}`} onClick={(e) => handleVote(-1, e)}>-</button>
         <button onClick={handleWatchlist}>
           {watchlisted ? '✓ Watchlist' : '+ Watchlist'}
         </button>
@@ -98,8 +100,8 @@ export default function ShowDetail() {
                 <span className="score-badge">
                   {Number(tag.score).toFixed(1)} ({tag.votes})
                 </span>
-                <button className={`vote-btn${(tagVotes[tag.id] || 0) === 1 ? ' active' : ''}`} onClick={() => handleTagVote(tag.id, 1)}>+</button>
-                <button className={`vote-btn${(tagVotes[tag.id] || 0) === -1 ? ' active' : ''}`} onClick={() => handleTagVote(tag.id, -1)}>-</button>
+                <button type="button" className={`vote-btn${(tagVotes[tag.id] || 0) === 1 ? ' active' : ''}`} onClick={(e) => handleTagVote(tag.id, 1, e)}>+</button>
+                <button type="button" className={`vote-btn${(tagVotes[tag.id] || 0) === -1 ? ' active' : ''}`} onClick={(e) => handleTagVote(tag.id, -1, e)}>-</button>
               </div>
             ))}
           </div>

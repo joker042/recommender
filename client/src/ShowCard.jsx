@@ -69,8 +69,8 @@ export default function ShowCard({ show, onVoteChange }) {
         )}
         </div>
         <div className="card-actions">
-          <button className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={() => handleVote(1)} title="Upvote">+</button>
-          <button className={`vote-btn${myVote === -1 ? ' active' : ''}`} onClick={() => handleVote(-1)} title="Downvote">-</button>
+          <button type="button" className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={(e) => handleVote(1, e)} title="Upvote">+</button>
+          <button type="button" className={`vote-btn${myVote === -1 ? ' active' : ''}`} onClick={(e) => handleVote(-1, e)} title="Downvote">-</button>
           <button onClick={handleWatchlist} disabled={added}>
             {added ? 'Added' : '+Watch'}
           </button>
