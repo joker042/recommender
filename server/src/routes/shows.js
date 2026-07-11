@@ -41,9 +41,11 @@ router.get('/:id', async (req, res) => {
       `SELECT s.id, s.title, s.type, s.year, s.synopsis,
               COALESCE(ss.score, 0) AS score,
               COALESCE(ss.total_votes, 0) AS votes,
+              COALESCE(sd.synopsis, s.synopsis) AS synopsis,
               COALESCE((SELECT vote FROM user_show_votes WHERE user_id = $2 AND show_id = s.id), 0) AS my_vote
        FROM shows s
        LEFT JOIN show_scores ss ON s.id = ss.show_id
+       LEFT JOIN show_details sd ON sd.show_id = s.id
        WHERE s.id = $1`,
       [req.params.id, req.user?.id || 0]
     );
