@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getShow, getRecommendations, voteShowTag, addToWatchlist } from './api.js';
+import { getShow, getRecommendations, voteShow, voteShowTag, addToWatchlist } from './api.js';
 import ShowCard from './ShowCard.jsx';
 
 export default function ShowDetail() {
@@ -8,6 +8,8 @@ export default function ShowDetail() {
   const [show, setShow] = useState(null);
   const [recs, setRecs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [myVote, setMyVote] = useState(0);
+  const [watchlisted, setWatchlisted] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -38,12 +40,19 @@ export default function ShowDetail() {
     }
   }
 
+  async function handleVote(vote) {
+    const newVote = myVote === vote ? 0 : vote;
+    setMyVote(newVote);
+    try { await voteShow(show.id, newVote); }
+    catch (err) { setMyVote(myVote); console.error(err); }
+  }
+
   async function handleWatchlist() {
+    if (watchlisted) return;
     try {
       await addToWatchlist(show.id);
-    } catch (err) {
-      console.error(err);
-    }
+      setWatchlisted(true);
+    } catch (err) { console.error(err); }
   }
 
   return (
@@ -58,9 +67,13 @@ export default function ShowDetail() {
         <strong>Score:</strong> {Number(show.score).toFixed(1)}
         <span className="score-badge">({show.votes} votes)</span>
       </p>
-      <button onClick={handleWatchlist} style={{ marginBottom: '1.5rem' }}>
-        + Add to Watchlist
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <button className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={() => handleVote(1)}>+</button>
+        <button className={`vote-btn${myVote === -1 ? ' active' : ''}`} onClick={() => handleVote(-1)}>-</button>
+        <button onClick={handleWatchlist} disabled={watchlisted}>
+          {watchlisted ? '✓ Watchlist' : '+ Watchlist'}
+        </button>
+      </div>
 
       {show.tags && show.tags.length > 0 && (
         <div style={{ marginBottom: '1.5rem' }}>
