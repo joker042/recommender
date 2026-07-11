@@ -21,6 +21,14 @@ export default function ShowDetail() {
         ]);
         setShow(showData);
         setRecs(recsData);
+        // Pre-fill tag votes from user's previous votes
+        if (showData.tags) {
+          const votes = {};
+          showData.tags.forEach(t => {
+            if (t.my_vote && t.my_vote !== 0) votes[t.id] = t.my_vote;
+          });
+          setTagVotes(votes);
+        }
       } catch (err) {
         console.error(err);
       } finally {
