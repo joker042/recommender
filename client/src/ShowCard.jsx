@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { voteShow, addToWatchlist, getShow } from './api.js';
+import { voteShow, addToWatchlist, removeFromWatchlistByShow, getShow } from './api.js';
 
 export default function ShowCard({ show, onVoteChange }) {
   const [added, setAdded] = useState(false);
@@ -29,10 +29,16 @@ export default function ShowCard({ show, onVoteChange }) {
     }
   }
 
-  async function handleWatchlist() {
+  async function handleWatchlist(e) {
+    if (e) e.preventDefault();
     try {
-      await addToWatchlist(show.id);
-      setAdded(true);
+      if (added) {
+        await removeFromWatchlistByShow(show.id);
+        setAdded(false);
+      } else {
+        await addToWatchlist(show.id);
+        setAdded(true);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -71,8 +77,8 @@ export default function ShowCard({ show, onVoteChange }) {
         <div className="card-actions">
           <button type="button" className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={(e) => handleVote(1, e)} title="Upvote">+</button>
           <button type="button" className={`vote-btn${myVote === -1 ? ' active' : ''}`} onClick={(e) => handleVote(-1, e)} title="Downvote">-</button>
-          <button onClick={handleWatchlist} disabled={added}>
-            {added ? 'Added' : '+Watch'}
+          <button onClick={handleWatchlist}>
+            {added ? '✓ Watching' : '+Watch'}
           </button>
         </div>
       </div>

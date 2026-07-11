@@ -192,3 +192,45 @@ test('watchlist reorder moves item', async ({ page }) => {
     await page.waitForTimeout(300);
   }
 });
+
+test('infinite scroll excludes voted shows', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForSelector('.card', { timeout: 15000 });
+  await page.waitForTimeout(1000);
+  
+  // Vote on the first show
+  const firstTitle = await page.locator('.card a').first().textContent();
+  await page.locator('.card .vote-btn').first().click();
+
+  // Scroll to load more
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(1500);
+  }
+
+  // The voted show should NOT appear again
+  const allTitles = await page.locator('.card a').allTextContents();
+  const duplicates = allTitles.filter(t => t === firstTitle);
+  expect(duplicates.length).toBe(1); // only the first one (the voted one)
+});
+
+test('infinite scroll excludes watchlisted shows', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForSelector('.card', { timeout: 15000 });
+  await page.waitForTimeout(1000);
+  
+  // Add first show to watchlist
+  const firstTitle = await page.locator('.card a').first().textContent();
+  await page.locator('.card button').last().click(); // watchlist button
+
+  // Scroll to load more
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(1500);
+  }
+
+  // The watchlisted show should NOT appear again
+  const allTitles = await page.locator('.card a').allTextContents();
+  const duplicates = allTitles.filter(t => t === firstTitle);
+  expect(duplicates.length).toBe(1);
+});
