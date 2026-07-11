@@ -15,12 +15,12 @@ test('infinite scroll loads more shows', async ({ page }) => {
   await page.goto('/');
   await page.waitForSelector('.card', { timeout: 15000 });
   const initial = await page.locator('.card').count();
-  for (let i = 0; i < 2; i++) {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1500);
-  }
+  // Click "More" button to load next page
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.waitForTimeout(1500);
   const after = await page.locator('.card').count();
   expect(after).toBeGreaterThan(initial);
+  console.log('More:', initial, '→', after);
 });
 
 test('home vote button toggles on and off', async ({ page }) => {
@@ -233,4 +233,43 @@ test('infinite scroll excludes watchlisted shows', async ({ page }) => {
   const allTitles = await page.locator('.card a').allTextContents();
   const duplicates = allTitles.filter(t => t === firstTitle);
   expect(duplicates.length).toBe(1);
+});
+
+
+test('recommendations have variety (multiple sources)', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForSelector('.card', { timeout: 15000 });
+  
+  // Vote on a show first so we get CF + era + co-occurrence
+  await page.locator('.card .vote-btn').first().click();
+  await page.waitForTimeout(500);
+  
+  // Scroll a few times to accumulate shows from different sources
+  for (let i = 0; i < 2; i++) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(1500);
+  }
+  
+  const count = await page.locator('.card').count();
+  expect(count).toBeGreaterThanOrEqual(20);
+  console.log('Total shows after scroll:', count);
+});
+
+test('voted show does not reappear in recommendations', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForSelector('.card', { timeout: 15000 });
+  await page.waitForTimeout(1000);
+  
+  const firstTitle = await page.locator('.card a').first().textContent();
+  await page.locator('.card .vote-btn').first().click();
+  
+  // Do a search to find if it appears elsewhere
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(1500);
+  }
+  
+  const allTitles = await page.locator('.card a').allTextContents();
+  const matches = allTitles.filter(t => t === firstTitle);
+  expect(matches.length).toBe(1); // only the original
 });

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getUserRecommendations } from './api.js';
 import ShowCard from './ShowCard.jsx';
 
@@ -8,45 +8,28 @@ export default function Home() {
   const [shows, setShows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [done, setDone] = useState(false);
-  const sentinelRef = useRef(null);
-  const seenIds = useRef(new Set());
-  const loadingRef = useRef(false); // prevent double-fires
+  const seenIds = new Set();
 
-  async function fetchBatch() {
-    if (loadingRef.current || done) return;
-    loadingRef.current = true;
+  useEffect(() => { loadMore(); }, []);
+
+  async function loadMore() {
     setLoading(true);
     try {
-      const exclude = [...seenIds.current].join(',');
+      const exclude = [...seenIds].join(',');
       const data = await getUserRecommendations(PAGE_SIZE, 0, exclude);
       if (data.length === 0) {
         setDone(true);
       } else {
-        data.forEach(s => seenIds.current.add(s.id));
+        data.forEach(s => seenIds.add(s.id));
         setShows(prev => [...prev, ...data]);
+        if (data.length < PAGE_SIZE) setDone(true);
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-      loadingRef.current = false;
     }
   }
-
-  useEffect(() => { fetchBatch(); }, []);
-
-  // Infinite scroll via IntersectionObserver
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !loadingRef.current) {
-        fetchBatch();
-      }
-    });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
 
   return (
     <div>
@@ -57,8 +40,10 @@ export default function Home() {
         <ShowCard key={show.id} show={show} />
       ))}
       {!done && (
-        <div ref={sentinelRef} style={{ height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {loading && <span>Loading...</span>}
+        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+          <button onClick={loadMore} disabled={loading}>
+            {loading ? 'Loading...' : 'More'}
+          </button>
         </div>
       )}
       {done && shows.length > 0 && (
