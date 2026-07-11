@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getShow, getRecommendations, voteShow, voteShowTag, addToWatchlist } from './api.js';
+import { getShow, getRecommendations, voteShow, voteShowTag, addToWatchlist, removeFromWatchlistByShow } from './api.js';
 import ShowCard from './ShowCard.jsx';
 
 export default function ShowDetail() {
@@ -57,10 +57,14 @@ export default function ShowDetail() {
   }
 
   async function handleWatchlist() {
-    if (watchlisted) return;
     try {
-      await addToWatchlist(show.id);
-      setWatchlisted(true);
+      if (watchlisted) {
+        await removeFromWatchlistByShow(show.id);
+        setWatchlisted(false);
+      } else {
+        await addToWatchlist(show.id);
+        setWatchlisted(true);
+      }
     } catch (err) { console.error(err); }
   }
 
@@ -79,7 +83,7 @@ export default function ShowDetail() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
         <button className={`vote-btn${myVote === 1 ? ' active' : ''}`} onClick={() => handleVote(1)}>+</button>
         <button className={`vote-btn${myVote === -1 ? ' active' : ''}`} onClick={() => handleVote(-1)}>-</button>
-        <button onClick={handleWatchlist} disabled={watchlisted}>
+        <button onClick={handleWatchlist}>
           {watchlisted ? '✓ Watchlist' : '+ Watchlist'}
         </button>
       </div>

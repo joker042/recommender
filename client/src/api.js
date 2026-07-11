@@ -113,3 +113,7 @@ export function getUserRecommendations(limit = 20, offset = 0, exclude = '') {
   if (exclude) params.set('exclude', exclude);
   return request(`/api/recommended?${params}`);
 }
+
+export function removeFromWatchlistByShow(showId) {
+  return request(`/api/watchlist/show/${showId}`, { method: 'DELETE' });
+}

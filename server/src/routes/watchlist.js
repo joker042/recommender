@@ -87,6 +87,31 @@ router.put('/:entry_id', async (req, res) => {
   }
 });
 
+// Remove from watchlist by show_id (for detail page toggle)
+router.delete('/show/:show_id', async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM watchlist_entries WHERE show_id = $1 AND watchlist_id = (
+        SELECT id FROM watchlists WHERE user_id = $2
+      )
+      RETURNING *`,
+      [req.params.show_id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Not in watchlist' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Watchlist DELETE error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.delete('/:entry_id', async (req, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
